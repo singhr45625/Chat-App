@@ -1,7 +1,17 @@
 import 'package:chatapp/screens/auth.dart';
+import 'package:chatapp/screens/chatScreen.dart';
+import 'package:chatapp/screens/splashScreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -19,7 +29,19 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.deepPurple
         ),
       ),
-      home: AuthScreen(),
+      home: StreamBuilder(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (ctx, snapshot) {
+            if(snapshot.connectionState == ConnectionState.waiting) {
+              return SplashScreen();
+            }
+
+            if (snapshot.hasData) {
+              return const ChatScreen();
+            }
+
+            return const AuthScreen();
+          }),
     );
   }
 }
